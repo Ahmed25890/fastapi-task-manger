@@ -1,0 +1,28 @@
+
+# this file write with claude code 
+
+# ─── Web Framework ───────────────────────────────────────
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# ─── Database ────────────────────────────────────────────
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10          # PostgreSQL driver
+pymysql==1.1.1                   # MySQL driver
+
+# ─── Pydantic & Settings ─────────────────────────────────
+pydantic==2.10.3
+pydantic[email]==2.10.3          # EmailStr support
+pydantic-settings==2.7.0         # BaseSettings / config.py
+
+# ─── Auth & Security ─────────────────────────────────────
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4            # password hashing
+python-multipart==0.0.20          # Form data support (login forms)
+
+# ─── Environment ─────────────────────────────────────────
+python-dotenv==1.0.1
+
+# ─── Analysis ────────────────────────────────────────────
+numpy==2.1.3
