@@ -36,7 +36,7 @@ async def create_task( request:Request,task: CreateTask, db: AsyncSession = Depe
     
 # update task 
 @limiter.limit("10/minute")
-@router.put("/task{task_id}", response_model=TaskResponse)
+@router.put("/task/{task_id}", response_model=TaskResponse)
 async def update_task( request:Request, task_id: int,task: UpdateTask, db: AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
     db_task = await tasks.GetTask(db, task_id)
     if db_task.user_id != current_user.user_id:

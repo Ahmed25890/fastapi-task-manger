@@ -7,17 +7,20 @@ import sqlalchemy as sq
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.rate_limiter import limiter
 async def GetTask(db:AsyncSession, task_id:int):
-    get_task = db.query(models.Tasks).filter(models.Tasks.task_id == task_id).first()
+    result = await db.execute(sq.select(models.Tasks).where(models.Tasks.task_id == task_id))
+    get_task = result.scalar_one_or_none()
     if get_task is None:
         raise HTTPException(status_code=404, detail="task not found")
     return get_task
 async def GetTaskByTitle(db: AsyncSession, TaskTitle:str):
-    get_task = db.query(models.Tasks).filter(models.Tasks.title == TaskTitle).first()
+    result = await db.execute(sq.select(models.Tasks).where(models.Tasks.title == TaskTitle))
+    get_task = result.scalar_one_or_none()
     if get_task is None:
         raise HTTPException(status_code=404, detail="task not found ")
     return get_task
 async def GetAllUserTasks(db: AsyncSession, user_id: int):
-    return db.query(models.Tasks).filter(models.Tasks.user_id == user_id).all()
+    result = await db.execute(sq.select(models.Tasks).where(models.Tasks.user_id == user_id))
+    return result.scalars().all()
 # def CreateTaskDB(db:Session, task: CreateTask, user_id: int):
 #     task_create = model.Tasks(
 #     title       = task.title,
@@ -55,7 +58,7 @@ async def UpdateTaskDB(db:AsyncSession, task_id:int, task: tasks.UpdateTask):
     edit_task.completed = task.completed
     edit_task.due_date = task.due_date
     edit_task.priority = task.priority
-    edit_task.Task_status = task.task_status
+    edit_task.task_status = task.task_status
     await db.commit()
     await db.refresh(edit_task) 
     return edit_task

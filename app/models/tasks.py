@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator, ValidationInfo
 from .enums import Priority, TaskStatus
 from typing import Optional
-from datetime import date
+from datetime import datetime, date
 import re
 # tasks
 
@@ -13,39 +13,36 @@ class TaskBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
     completed: Optional[bool] = Field(False)
-    start_date: Optional[date]  = Field(None)
-    due_date: Optional[date] = Field(None)
+    start_date: Optional[datetime]  = None
+    due_date: Optional[datetime] = Field(None)
     priority: Optional[Priority] = Field(Priority.medium)
     task_status: Optional[TaskStatus] = Field(TaskStatus.ToDo)
    
     @field_validator("description")
     @classmethod
-    def val_description(cls, x:Optional[str]):
-        if x is None: 
-            raise ValueError("")
-        x = x.strip()
-        final = re.sub(" ", "_", x)
+    def val_description(cls, v: Optional[str]):
+        if v is None:
+            return v
+        v = v.strip()
+        final = re.sub(r"\s+", "_", v)
         return final
    
     @field_validator("due_date")
     @classmethod
-    def val_due_date(cls, due, values):
-        start = values.get("start_date")
-        if start is None:
-            return start
-        if start and due and due < start:
+    def val_due_date(cls, v: Optional[datetime], info: ValidationInfo):
+        start = info.data.get("start_date")
+        if v and start and v < start:
             raise ValueError("due_date must be after start_date")
-
-        return due  
+        return v
      
     @field_validator("start_date")
     @classmethod 
-    def val_start_date(cls, t: Optional[date]):
-        if t is None: 
-            return t
-        if t < date.today():
+    def val_start_date(cls, v: Optional[datetime]):
+        if v is None: 
+            return v
+        if v.date() < date.today():
             raise ValueError("date error")
-        return t
+        return v
 class CreateTask(TaskBase):
     pass
 class UpdateTask(TaskBase):

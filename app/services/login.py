@@ -15,7 +15,7 @@ async def login(data: user.UserLogin, db: AsyncSession = Depends(session.get_db)
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    elif not await auth.verifyHash(data.password, user.password):
+    elif not auth.verifyHash(data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
@@ -29,5 +29,5 @@ async def login(data: user.UserLogin, db: AsyncSession = Depends(session.get_db)
         user_obj = await GetUserByEmailSafe(db, data.email)
         if user_obj:
             await set_cache(cached_key, user_obj)
-    token = await auth.create_token(data={"sub": user.email})
+    token =  auth.create_token(data={"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}

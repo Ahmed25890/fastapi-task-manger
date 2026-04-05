@@ -15,32 +15,13 @@ from app.services.rate_limiter import limiter
 
 router = APIRouter()
 
-# note 
-@limiter.limit("10/minute")
-@router.post("/login",response_model=Token)
-async def login(request: Request, data: UserLogin, db: AsyncSession = Depends(get_db)):
-    user = await user_service.GetUserByEmailSafe(db, data.email)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    elif not await auth.verifyHash(data.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    token = await auth.create_token(data={"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
 
 # get user id
 @limiter.limit("10/minute")
 @router.get("/user/{user_id}",response_model=UserResponse)
 async def get_user( request:Request,user_id:int, db: AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
 
-    return await user_service.GetUser(db, user_id== current_user.user_id)
+    return await user_service.GetUser(db, user_id)
 
 # get user by email 
 @limiter.limit("10/minute")

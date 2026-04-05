@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @limiter.limit("10/minute")
-@router.post("/login",response_model=Token)
+@router.post("/login", response_model=Token)
 async def login( request:Request,data: UserLogin, db: AsyncSession = Depends(get_db)):
     user = await user_service.GetUserByEmailSafe(db, data.email)
     if user is None:
@@ -28,11 +28,11 @@ async def login( request:Request,data: UserLogin, db: AsyncSession = Depends(get
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    elif not await auth.verifyHash(data.password, user.password):
+    elif not auth.verifyHash(data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = await auth.create_token(data={"sub": user.email})
+    token =  auth.create_token(data={"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}

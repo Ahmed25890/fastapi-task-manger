@@ -13,7 +13,7 @@ async def CreateUserDB(db:AsyncSession, user: user.CreateUser):
     new_user =models.Users(
         user_name = user.user_name,
         email = user.email,
-        password = await HashPassword(user.password)
+        password = HashPassword(user.password)
     )
     db.add(new_user)
     await db.commit()
@@ -22,17 +22,16 @@ async def CreateUserDB(db:AsyncSession, user: user.CreateUser):
 
 async def GetUser(db: AsyncSession, user_id: int):
     q = sq.select(models.Users).where(models.Users.user_id ==  user_id)
-    user = db.execute(q).scalar_one_or_none()
+    result = await db.execute(q)
+    user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=404, detail="user not found")
     return user
 
-# def GetUserByEmail(db:Session, user_email: str):
-#     user = db.query(model.Users).filter(model.Users.email == user_email).first()
-#     return user
 async def GetUserByEmailSafe(db:AsyncSession, user_email: str): 
-     user = db.query(models.Users).filter(models.Users.email == user_email).first()
-     return user
+     result = await db.execute(sq.select(models.Users).where(models.Users.email == user_email))
+     return result.scalar_one_or_none()
+
 async def UpdateUser(db:AsyncSession, user_id: int,user: user.UserUpdate):
     get_user = await GetUser(db, user_id)
     if get_user is None:
@@ -43,14 +42,15 @@ async def UpdateUser(db:AsyncSession, user_id: int,user: user.UserUpdate):
     for key, value in update_data.items():
         setattr(get_user, key, value)
     if user.password:
-        get_user.password = await HashPassword(user.password)
+        get_user.password =  HashPassword(user.password)
     await db.commit()
     await db.refresh(get_user)
     return get_user
-async def DelUserDB(db:AsyncSession, user:user.DelUser):
-    get_user = await GetUser(db, user.user_id)
+
+async def DelUserDB(db:AsyncSession, user_id: int):
+    get_user = await GetUser(db, user_id)
     if get_user is None:
         raise HTTPException(status_code=404, detail="user not found")
     db.delete(get_user)
     await db.commit()
-    return {"message": "user deleted successfully" , "user_id": user.user_id}
+    return {"message": "user deleted successfully" , "user_id": user_id}

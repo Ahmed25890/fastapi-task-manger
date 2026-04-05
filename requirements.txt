@@ -9,6 +9,7 @@ uvicorn[standard]==0.32.1
 sqlalchemy==2.0.36
 alembic==1.14.0
 psycopg2-binary==2.9.10          # PostgreSQL driver
+aiomysql==0.2.0                  # Async MySQL driver
 pymysql==1.1.1                   # MySQL driver
 
 # ─── Pydantic & Settings ─────────────────────────────────
