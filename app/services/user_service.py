@@ -1,14 +1,27 @@
 
-from sqlalchemy.orm import Session
-
-from models import user, tasks
-from db import models
-from authentication.auth import HashPassword
-from fastapi import status, HTTPException
+from app.models import user
+from app.db import models
+from app.services.authentication.auth import HashPassword
+from fastapi import status, HTTPException, Request
 import sqlalchemy as sq
+from sqlalchemy.ext.asyncio import async_session
 
+from app.services.user_service import GetUserByEmailSafe
+async def CreateUserDB(db:async_session, user: user.CreateUser):
+    check = GetUserByEmailSafe(db, user.email)
+    if check:
+        raise HTTPException(status_code=400, detail="this email was used")
+    new_user =models.Users(
+        user_name = user.user_name,
+        email = user.email,
+        password = HashPassword(user.password)
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
 
-def GetUser(db: Session, user_id: int ):
+async def GetUser(db: async_session, user_id: int):
     q = sq.select(models.Users).where(models.Users.user_id ==  user_id)
     user = db.execute(q).scalar_one_or_none()
     if user is None:
@@ -18,20 +31,27 @@ def GetUser(db: Session, user_id: int ):
 # def GetUserByEmail(db:Session, user_email: str):
 #     user = db.query(model.Users).filter(model.Users.email == user_email).first()
 #     return user
-def GetUserByEmailSafe(db:Session, user_email: str): 
+async def GetUserByEmailSafe(db:async_session, user_email: str): 
      user = db.query(models.Users).filter(models.Users.email == user_email).first()
      return user
-def UpdateUser(db:Session, user_id: int,user: user.UserUpdate):
+async def UpdateUser(db:async_session, user_id: int,user: user.UserUpdate):
     get_user = GetUser(db, user_id)
-    get_user.user_name = user.user_name
-    get_user.email = user.email
+    if get_user is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    update_data = user.model_dump(exclude_unset=True)
+    # get_user.user_name = user.user_name
+    # get_user.email = user.email
+    for key, value in update_data.items():
+        setattr(get_user, key, value)
     if user.password:
         get_user.password = HashPassword(user.password)
     db.commit()
     db.refresh(get_user)
     return get_user
-def DelUserDB(db:Session, user:user.DelUser):
+async def DelUserDB(db:async_session, user:user.DelUser):
     get_user = GetUser(db, user.user_id)
+    if get_user is None:
+        raise HTTPException(status_code=404, detail="user not found")
     db.delete(get_user)
     db.commit()
-    return get_user
+    return {"message": "user deleted successfully" , "user_id": user.user_id}

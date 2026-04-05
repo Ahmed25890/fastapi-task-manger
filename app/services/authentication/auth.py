@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -18,18 +18,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 pwt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-def HashPassword(password: str):
+async def HashPassword(password: str):
     hashed = pwt_context.hash(password)
     return hashed
     
-def verifyHash(password:str, hash:str):
+async def verifyHash(password:str, hash:str):
     verify_pass =pwt_context.verify(password, hash)
     return verify_pass
 
-def create_token(data: dict, engine_delta: Optional[timedelta]= None):
+async def create_token(data: dict, engine_delta: Optional[timedelta]= None):
     to_encode = data.copy()
     if engine_delta:
-        expire = datetime.utcnow() + engine_delta
+        expire = datetime.now(timezone.utc) + engine_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     

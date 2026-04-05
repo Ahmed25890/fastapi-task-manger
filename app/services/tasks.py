@@ -2,21 +2,21 @@ from sqlalchemy.orm import Session
 from app.models import tasks, user  
 from app.db import models, session  
 from app.services.authentication import auth , get_current_user_file
-from fastapi import status, HTTPException
+from fastapi import status, HTTPException, Request
 import sqlalchemy as sq
-
-
-def GetTask(db:Session, task_id:int):
+from sqlalchemy.ext.asyncio import async_session
+from app.services.rate_limiter import limiter
+async def GetTask(db:async_session, task_id:int):
     get_task = db.query(models.Tasks).filter(models.Tasks.task_id == task_id).first()
     if get_task is None:
         raise HTTPException(status_code=404, detail="task not found")
     return get_task
-def GetTaskByTitle(db: Session, TaskTitle:str):
+async def GetTaskByTitle(db: async_session, TaskTitle:str):
     get_task = db.query(models.Tasks).filter(models.Tasks.title == TaskTitle).first()
     if get_task is None:
         raise HTTPException(status_code=404, detail="task not found ")
     return get_task
-def GetAllUserTasks(db:Session, user_id: int):
+async def GetAllUserTasks(db: async_session, user_id: int):
     return db.query(models.Tasks).filter(models.Tasks.user_id == user_id).all()
 # def CreateTaskDB(db:Session, task: CreateTask, user_id: int):
 #     task_create = model.Tasks(
@@ -33,7 +33,7 @@ def GetAllUserTasks(db:Session, user_id: int):
 #     db.refresh(task_create)
 #     return task_create
 ### this write with chat gpt 
-def CreateTaskDB(db: Session, task: tasks.CreateTask, user_id: int):
+async def CreateTaskDB(db: async_session, task: tasks.CreateTask, user_id: int):
     task_create = models.Tasks(
         title       = task.title,
         description = task.description,
@@ -48,7 +48,7 @@ def CreateTaskDB(db: Session, task: tasks.CreateTask, user_id: int):
     db.refresh(task_create)
     return task_create
 ##### 
-def UpdateTaskDB(db:Session, task_id:int, task: tasks.UpdateTask):
+async def UpdateTaskDB(db:async_session, task_id:int, task: tasks.UpdateTask):
     edit_task = GetTask(db, task_id)
     edit_task.title = task.title
     edit_task.description = task.description
@@ -60,7 +60,7 @@ def UpdateTaskDB(db:Session, task_id:int, task: tasks.UpdateTask):
     db.refresh(edit_task) 
     return edit_task
 
-def DelTaskDB(db:Session, task_id: int):
+async def DelTaskDB(db:async_session, task_id: int):
     del_task = GetTask(db, task_id)
     db.delete(del_task)
     db.commit()
