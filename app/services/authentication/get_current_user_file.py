@@ -6,7 +6,7 @@ import os
 from app.db.session import get_db
 from jose import JWTError, jwt
 from app.services.user_service import  GetUserByEmailSafe
-from sqlalchemy.ext.asyncio import async_session
+from sqlalchemy.ext.asyncio import AsyncSession
 load_dotenv()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -14,7 +14,7 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: async_session = Depends(get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -28,8 +28,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: async_sessio
     except JWTError:
         raise credentials_exception
         
-    user = GetUserByEmailSafe(db, email)
+    user = await GetUserByEmailSafe(db, email)
     if user is None:
         raise credentials_exception
-        
     return user

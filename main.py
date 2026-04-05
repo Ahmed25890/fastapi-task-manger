@@ -1,17 +1,13 @@
 from fastapi import FastAPI
-from app.db import session
-from app.services import login , register, user_service
-from app.services import tasks as task_service
-from app.services.authentication import auth , get_current_user_file
 from app.services.rate_limiter import limiter
-from app.api import tasks , user
+from app.api import tasks, user, login
+from app.services.global_exception_handler_file import global_exception_handler
+
 app = FastAPI(title="Task Manager API", version="1.0")
 
-app.include_router(user.router,
-                   prefix="user/",
-                   tags=["Users"])
-app.include_router(tasks.router,
-                   prefix="tasks/",
-                   tags=["tasks/"])
+app.include_router(user.router, prefix="/user", tags=["Users"])
+app.include_router(tasks.router, prefix="/tasks", tags=["Tasks"])
+app.include_router(login.router, prefix="/login", tags=["Login"])
+
 app.state.limiter = limiter
-app.exception_handler()
+app.add_exception_handler(Exception, global_exception_handler)

@@ -27,7 +27,7 @@ class Tasks(Base):
     due_date = Column(DateTime, nullable=True)
     priority = Column(Enum(Priority), default=Priority.medium)
     task_status = Column(Enum(TaskStatus), default=TaskStatus.ToDo)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False, ondelete="CASCADE")
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
 
     user = relationship("Users", back_populates="tasks")
 

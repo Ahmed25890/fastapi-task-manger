@@ -1,10 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Request
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, HTTPException, Depends, status
-# from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession 
 from app.db.session import  get_db
 from app.db import models
 
@@ -23,49 +18,49 @@ router = APIRouter()
 # note 
 @limiter.limit("10/minute")
 @router.post("/login",response_model=Token)
-def login(request: Request, data: UserLogin, db: Session = Depends(get_db)):
-    user = user_service.GetUserByEmailSafe(db, data.email)
+async def login(request: Request, data: UserLogin, db: AsyncSession = Depends(get_db)):
+    user = await user_service.GetUserByEmailSafe(db, data.email)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    elif not auth.verifyHash(data.password, user.password):
+    elif not await auth.verifyHash(data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = auth.create_token(data={"sub": user.email})
+    token = await auth.create_token(data={"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
 
 # get user id
 @limiter.limit("10/minute")
 @router.get("/user/{user_id}",response_model=UserResponse)
-def get_user( request:Request,user_id:int, db: Session = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
+async def get_user( request:Request,user_id:int, db: AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
 
-    return user_service.GetUser(db, user_id== current_user.user_id)
+    return await user_service.GetUser(db, user_id== current_user.user_id)
 
 # get user by email 
 @limiter.limit("10/minute")
 @router.get("/user",response_model=UserResponse)
-def get_user_by_email( request:Request,email:str, db:Session = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
-    return user_service.GetUserByEmailSafe(db, email)
+async def get_user_by_email( request:Request,email:str, db:AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
+    return await user_service.GetUserByEmailSafe(db, email)
 
 # create user
 @limiter.limit("10/minute")
 @router.post("/user",response_model=UserResponse) 
-def create_user( request:Request,user: CreateUser, db: Session = Depends(get_db)):
-    return user_service.CreateUserDB(db, user)
+async def create_user( request:Request,user: CreateUser, db: AsyncSession = Depends(get_db)):
+    return await user_service.CreateUserDB(db, user)
 
 # update user 
 @limiter.limit("10/minute")
 @router.put("/user",response_model=UserResponse)
-def update_user( request:Request,user:UserUpdate, db: Session = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
-    return user_service.UpdateUser(db,current_user.user_id ,user)
+async def update_user( request:Request,user:UserUpdate, db: AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
+    return await user_service.UpdateUser(db,current_user.user_id ,user)
 # del user 
 @limiter.limit("10/minute")
 @router.delete("/user",response_model=UserResponse)
-def del_user_main( request:Request,user: DelUser, db: Session = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
-    return user_service.DelUserDB(db, current_user.user_id)
+async def del_user_main( request:Request,user: DelUser, db: AsyncSession = Depends(get_db),current_user: models.Users = Depends(get_current_user)):
+    return await user_service.DelUserDB(db, current_user.user_id)
