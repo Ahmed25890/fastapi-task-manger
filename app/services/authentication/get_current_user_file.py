@@ -1,17 +1,16 @@
 from fastapi import HTTPException, Depends, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
-import os
 from app.db.session import get_db
 from jose import JWTError, jwt
 from app.services.user_service import  GetUserByEmailSafe
 from sqlalchemy.ext.asyncio import AsyncSession
-load_dotenv()
+from app.core.config import settings
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY =settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
