@@ -9,3 +9,6 @@ class TaskStatus(StrEnum):
     ToDo = "ToDo"
     InProgress = "InProgress"
     Done = "Done"
+class Roles(StrEnum):
+    Admin = "Admin"
+    member = "Member"

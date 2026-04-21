@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict, field_validator, ValidationInfo
-from .enums import Priority, TaskStatus
+from app.models.enums import Priority, TaskStatus
 from typing import Optional
 from datetime import datetime, date
 import re

@@ -13,7 +13,8 @@ async def CreateUserDB(db:AsyncSession, user: user.CreateUser):
     new_user =models.Users(
         user_name = user.user_name,
         email = user.email,
-        password = HashPassword(user.password)
+        password = HashPassword(user.password),
+        role = user.role
     )
     db.add(new_user)
     await db.commit()

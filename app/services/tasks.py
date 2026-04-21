@@ -21,21 +21,6 @@ async def GetTaskByTitle(db: AsyncSession, TaskTitle:str):
 async def GetAllUserTasks(db: AsyncSession, user_id: int):
     result = await db.execute(sq.select(models.Tasks).where(models.Tasks.user_id == user_id))
     return result.scalars().all()
-# def CreateTaskDB(db:Session, task: CreateTask, user_id: int):
-#     task_create = model.Tasks(
-#     title       = task.title,
-#     description = task.description,
-#     completed   = task.completed,
-#     due_date    = task.due_date,
-#     priority    = task.priority,
-#     user_id     = user_id,
-#     Task_status = task.task_status
-# )
-#     db.add(task_create)
-#     db.commit()
-#     db.refresh(task_create)
-#     return task_create
-### this write with chat gpt 
 async def CreateTaskDB(db: AsyncSession, task: tasks.CreateTask, user_id: int):
     task_create = models.Tasks(
         title       = task.title,
@@ -50,7 +35,6 @@ async def CreateTaskDB(db: AsyncSession, task: tasks.CreateTask, user_id: int):
     await db.commit()
     await db.refresh(task_create)
     return task_create
-##### 
 async def UpdateTaskDB(db:AsyncSession, task_id:int, task: tasks.UpdateTask):
     edit_task = await GetTask(db, task_id)
     edit_task.title = task.title

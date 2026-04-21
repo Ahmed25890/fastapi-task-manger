@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-
+from app.models.enums import Roles
+from typing import Optional
 class UserLogin(BaseModel):
     email: EmailStr
     password: str  = Field(min_length=6, max_length=100)
@@ -22,6 +23,7 @@ class CreateUser(BaseModel):
     user_name: str  = Field(min_length=1, max_length=80)
     email: EmailStr
     password: str = Field(min_length=6, max_length=100)
+    role: Optional[Roles] = Field(Roles.member)
 
 
 class UserUpdate(CreateUser):

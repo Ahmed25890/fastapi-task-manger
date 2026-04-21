@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, f
 from sqlalchemy.orm import relationship
 from .session import Base
 from datetime import datetime, timezone
-from app.models.enums import TaskStatus , Priority
+from app.models.enums import TaskStatus , Priority, Roles
 
 # add to users role 
 class Users(Base):
@@ -11,8 +11,8 @@ class Users(Base):
     user_id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     user_name = Column(String(50), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
+    role = Column(Enum(Roles), default=Roles.member)
     password = Column(String(255), nullable=False)
-
     tasks = relationship("Tasks", back_populates="user")
 
 
