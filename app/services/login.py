@@ -7,27 +7,25 @@ from app.services.user_service import GetUserByEmailSafe
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.cache import get_cache, set_cache
 async def login(data: user.UserLogin, db: AsyncSession = Depends(session.get_db)):
-    user = await GetUserByEmailSafe(db, data.email)
-    if user is None:
+    cached_key = f"user:{data.email}"
+    user_obj = await get_cache(cached_key)
+    
+    if user_obj is None:
+        user_obj = await GetUserByEmailSafe(db, data.email)
+        if user_obj: await set_cache(cached_key, user_obj)
+            
+    if user_obj is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    elif not auth.verifyHash(data.password, user.password):
+    if not auth.verifyHash(data.password, user_obj.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    cached_key = f"user: {data.email}"
-    cached_user = await get_cache(cached_key)
-    if cached_user:
-        user_obj = cached_user
-    else:
-        user_obj = await GetUserByEmailSafe(db, data.email)
-        if user_obj:
-            await set_cache(cached_key, user_obj)
-    token =  auth.create_token(data={"sub": user.email})
+    token = auth.create_token(data={"sub": user_obj.email})
     return {"access_token": token, "token_type": "bearer"}

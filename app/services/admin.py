@@ -5,7 +5,6 @@ import sqlalchemy as sq
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.user_service import GetUser, CreateUserDB, DelUser as DelUserService
 from app.models.user import CreateUser, DelUser as DelUserModel
-from app.services.tasks import GetAllUserTasks, DelTaskDB, GetAllUserTasks
 from app.services.tasks import GetAllUserTasks, DelTaskDB
 from app.models.enums import Roles, TaskStatus
 

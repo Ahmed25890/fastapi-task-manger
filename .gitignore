@@ -4,3 +4,4 @@ alembic
 app.db
 __pycache__
 .vscode
+Dockerfile
