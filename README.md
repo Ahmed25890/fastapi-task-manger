@@ -1,4 +1,4 @@
-# Task Manager API\
+# Task Manager API
 
 ## Core Stack
 - **FastAPI**: Modern, fast (high-performance) web framework.
